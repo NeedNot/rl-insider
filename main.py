@@ -179,14 +179,13 @@ for response in response_list:
             multiple = 1000000.0
         else:
             multiple = 1.0
-    except:
-        print("L99", price)
-
-    try:
         min_price = (float(price.split()[0]) * multiple) - bp_cost
         max_price = (float(price.split()[2]) * multiple) - bp_cost
     except:
-        pass
+        print("L99", price)
+        min_price = 0
+        max_price = 0
+
 
     if 0 > min_price:
         print(min_price)
