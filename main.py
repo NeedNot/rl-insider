@@ -27,7 +27,23 @@ list_of_amount = []
 
 def get_url(url):
     print(url)
-    return requests.get(url)
+    #Counter.count()
+    try:
+        x = requests.get(url, timeout=10)
+        if x == 'None':
+            print('Null response')
+            get_url(url)
+        else:
+            return x
+
+    except:
+        get_url(url)
+# class Counter:
+#     x = -1
+#     def count():
+#         Counter.x += 1
+#         print(Counter.x)
+
 
 for i in range(len(inventory)):
     name = inventory[i]['name']
@@ -50,6 +66,19 @@ for i in range(len(inventory)):
             name = 'Peregrine Crisis'
         if name == 'Peregrine TT: Hoodbar':
             name = 'peregrine hoodbar'
+
+        if name == 'Invader' and quality == 'Common':
+            name = 'Invader common'
+        if name == 'Invader' and quality == 'Very Rare':
+            name = 'Invader veryrare'
+        if name == 'Invader' and quality == 'Exotic':
+            name = 'Invader exotic'
+
+        if name == 'Blade Wave':
+            name = 'blade wave 2020 inverted'
+
+        if name == 'Backfire: Cruster Buster':
+            name = 'Cruster Buster'
 
         if name == 'Warp Wave' and type == 'Animated Decal':
             name = 'warp wave decal'
@@ -122,16 +151,20 @@ for i in range(len(inventory)):
 
         list_of_urls.append(f"https://rl.insider.gg/en/pc/{name_format}/{paint_format}")
 
-with ThreadPoolExecutor(max_workers=100) as pool:
+with ThreadPoolExecutor(max_workers=50) as pool:
     response_list = list(pool.map(get_url,list_of_urls))
 runs = -1
 print('ted')
 for response in response_list:
     runs += 1
     bp_cost = list_of_cost[runs]
-    amout = list_of_amounts[runs]
-    soup = BeautifulSoup(response.content, "html.parser")
-    results = soup.find(id="matrixRow0")
+    amount = list_of_amount[runs]
+    try:
+        soup = BeautifulSoup(response.content, "html.parser")
+        results = soup.find(id="matrixRow0")
+    except:
+        print(response)
+        print("error", list_of_names[runs])
     print("L91", runs)
     try:
         price_elements = results.find_all("td")
@@ -169,7 +202,6 @@ for response in response_list:
     sheet[f"C{runs + 1}"] = min_price
     sheet[f"D{runs + 1}"] = max_price
     sheet[f"E{runs + 1}"] = bp_cost
-    sheet[f"F{runs + 1}"] = amount
 
     #print("L112", list_of_names[runs], list_of_paint[runs], min_price, max_price)
 
