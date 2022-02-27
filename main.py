@@ -62,7 +62,7 @@ def can_run(bp):
         return False
     return True
 
-for i in tqdm(range(len(inventory)), desc="Getting eligible items"):
+for i in tqdm(range(len(inventory)), desc="Filtering eligible items"):
     name = inventory[i]['name']
     paint = inventory[i]['paint']
     type = inventory[i]['slot']
@@ -159,7 +159,7 @@ for i in tqdm(range(len(inventory)), desc="Getting eligible items"):
         if paint == "Purple":
             paint_format = "purple"
         if blueprint_name:
-            name = "Blue print: "+name
+            name = "Blueprint: "+name
         list_of_names.append(name)
         list_of_paint.append(paint)
         list_of_cost.append(bp_cost)
@@ -170,6 +170,7 @@ for i in tqdm(range(len(inventory)), desc="Getting eligible items"):
 with ThreadPoolExecutor(max_workers=10) as pool:
     response_list = list(tqdm(pool.map(get_url,list_of_urls), total=len(list_of_urls), desc="Downloading item details"))
 runs = -1
+error_list = []
 #print('ted')
 for response in tqdm(response_list, desc="Getting prices"):
     runs += 1
@@ -187,7 +188,7 @@ for response in tqdm(response_list, desc="Getting prices"):
         price_elements = results.find_all("td")
         price = price_elements[pc].text
     except:
-        print(list_of_urls[runs])
+        error_list.append(list_of_urls[runs])
     try:
         value_m = price.split()[-1]
         if value_m == "k":
@@ -221,8 +222,11 @@ for response in tqdm(response_list, desc="Getting prices"):
 
     #print("L112", list_of_names[runs], list_of_paint[runs], min_price, max_price)
 
-
-print(min, max)
+print("min:",min, "max:",max)
+print("Item prices outputted to prices.xlsx")
+print("The following links were unable to be downloaded. please report this to Need_Not so it can be fixed:")
+for i in error_list:
+    print(i)
 sheet[f"C{runs + 2}"] = min
 sheet[f"D{runs + 2}"] = max
-workbook.save(filename="hello_world.xlsx")
+workbook.save(filename="prices.xlsx")
