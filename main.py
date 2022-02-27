@@ -151,7 +151,7 @@ for i in range(len(inventory)):
 
         list_of_urls.append(f"https://rl.insider.gg/en/pc/{name_format}/{paint_format}")
 
-with ThreadPoolExecutor(max_workers=50) as pool:
+with ThreadPoolExecutor(max_workers=10) as pool:
     response_list = list(pool.map(get_url,list_of_urls))
 runs = -1
 print('ted')
@@ -206,4 +206,6 @@ for response in response_list:
 
 
 print(min, max)
+sheet[f"C{runs + 2}"] = min
+sheet[f"D{runs + 2}"] = max
 workbook.save(filename="hello_world.xlsx")
