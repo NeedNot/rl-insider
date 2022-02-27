@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import json
 from concurrent.futures import ThreadPoolExecutor
 from openpyxl import Workbook
+from tqdm import tqdm
 
 pc = 1
 ps4 = 2
@@ -11,6 +12,16 @@ switch = 4
 
 f = open('inventory.json')
 inventory = json.load(f)["inventory"]
+
+if input("Enable Blueprints? (y/n): ") == "y":
+    bp_setting = True
+else:
+    bp_setting = False
+if input("Enable Items? (y/n): ") == "y":
+    item_setting = True
+else:
+    item_setting = False
+
 
 min = 0
 max = 0
@@ -26,7 +37,7 @@ list_of_cost = []
 list_of_amount = []
 
 def get_url(url):
-    print(url)
+    #print(url)
     #Counter.count()
     try:
         x = requests.get(url, timeout=10)
@@ -44,8 +55,14 @@ def get_url(url):
 #         Counter.x += 1
 #         print(Counter.x)
 
+def can_run(bp):
+    if bp_setting == False and bp != "":
+        return False
+    if item_setting == False and bp == "":
+        return False
+    return True
 
-for i in range(len(inventory)):
+for i in tqdm(range(len(inventory)), desc="Getting eligible items"):
     name = inventory[i]['name']
     paint = inventory[i]['paint']
     type = inventory[i]['slot']
@@ -56,8 +73,7 @@ for i in range(len(inventory)):
     bp_cost = inventory[i]['blueprint_cost']
 
     blueprint_name = False
-
-    if trade == 'true' and quality != 'Common':
+    if trade == 'true' and quality != 'Common' and can_run(bp):
         if bp != "":
             name = bp
             blueprint_name = True
@@ -111,7 +127,7 @@ for i in range(len(inventory)):
         if name == 'Hydraul1K':
             name = 'Hydral1K'
         x += 1
-        print(x)
+        #print(x)
         name_format = name.replace(' ', '_').replace('(', '').replace(')', '').replace(':', '').replace("'", "").replace('.', '').replace('-', '_')
 
         if paint == "none":
@@ -152,10 +168,10 @@ for i in range(len(inventory)):
         list_of_urls.append(f"https://rl.insider.gg/en/pc/{name_format}/{paint_format}")
 
 with ThreadPoolExecutor(max_workers=10) as pool:
-    response_list = list(pool.map(get_url,list_of_urls))
+    response_list = list(tqdm(pool.map(get_url,list_of_urls), total=len(list_of_urls), desc="Downloading item details"))
 runs = -1
-print('ted')
-for response in response_list:
+#print('ted')
+for response in tqdm(response_list, desc="Getting prices"):
     runs += 1
     bp_cost = list_of_cost[runs]
     amount = list_of_amount[runs]
@@ -163,9 +179,10 @@ for response in response_list:
         soup = BeautifulSoup(response.content, "html.parser")
         results = soup.find(id="matrixRow0")
     except:
-        print(response)
-        print("error", list_of_names[runs])
-    print("L91", runs)
+        pass
+        #print(response)
+        #print("error", list_of_names[runs])
+    #print("L91", runs)
     try:
         price_elements = results.find_all("td")
         price = price_elements[pc].text
@@ -182,13 +199,13 @@ for response in response_list:
         min_price = (float(price.split()[0]) * multiple) - bp_cost
         max_price = (float(price.split()[2]) * multiple) - bp_cost
     except:
-        print("L99", price)
+        #print("L99", price)
         min_price = 0
         max_price = 0
 
 
     if 0 > min_price:
-        print(min_price)
+        #print(min_price)
         min_price = 0
     if 0 > max_price:
         max_price = 0
