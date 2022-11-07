@@ -165,7 +165,37 @@ for i in tqdm(range(len(inventory)), desc="Filtering eligible items"):
         list_of_cost.append(bp_cost)
         list_of_amount.append(amount)
 
-        list_of_urls.append(f"https://rl.insider.gg/en/pc/{name_format}/{paint_format}")
+        catagory = None
+        if "decal" in type.lower():
+            catagory = "decals"
+        if "body" in type.lower():
+            catagory = "cars"
+        if "boost" in type.lower():
+            catagory = "boosts"
+        if "antenna" in type.lower():
+            catagory = "antennas"
+        if "wheels" in type.lower():
+            catagory = "wheels"
+        if "paint" in type.lower():
+            catagory = "paint_finishes"
+        if "trail" in type.lower():
+            catagory = "trails"
+        if "goal" in type.lower():
+            catagory = "goal_explosions"
+        if "banner" in type.lower():
+            catagory = "banners"
+        if "topper" in type.lower():
+            catagory = "toppers"
+        if "border" in type.lower():
+            catagory = "avatar_borders"
+        if "audio" in type.lower():
+            catagory = "engine_sounds"
+        if catagory is None:
+            print(type)
+
+        if len(paint_format) > 0: paint_format = "/"+paint_format
+
+        list_of_urls.append(f"https://rl.insider.gg/en/pc/{catagory}/{name_format.lower()}{paint_format}")
 
 with ThreadPoolExecutor(max_workers=10) as pool:
     response_list = list(tqdm(pool.map(get_url,list_of_urls), total=len(list_of_urls), desc="Downloading item details"))
